@@ -6,11 +6,12 @@ from lago_python_client.base_model import BaseModel
 from ..base_client import BaseClient
 from ..fees.clients import FeeClient
 from ..mixins import CreateCommandMixin, FindCommandMixin
-from ..models.event import EventResponse
+from ..models.event import EventResponse, BatchEventResponse
 from ..models.fee import FeeResponse
 from ..services.json import to_json
 from ..services.request import make_headers, make_url, send_post_request
-from ..services.response import get_response_data, prepare_object_list_response, verify_response, Response
+from ..services.response import get_response_data, prepare_object_response, prepare_object_list_response, \
+    verify_response, Response
 
 if sys.version_info >= (3, 9):
     from collections.abc import Mapping
@@ -23,7 +24,7 @@ class EventClient(CreateCommandMixin[EventResponse], FindCommandMixin[EventRespo
     RESPONSE_MODEL: ClassVar[Type[EventResponse]] = EventResponse
     ROOT_NAME: ClassVar[str] = 'event'
 
-    def batch_create(self, input_object: BaseModel) -> None:
+    def batch_create(self, input_object: BaseModel) -> Optional[BatchEventResponse]:
         api_response: Response = send_post_request(
             url=make_url(
                 origin=self.base_url,
@@ -33,12 +34,18 @@ class EventClient(CreateCommandMixin[EventResponse], FindCommandMixin[EventRespo
             headers=make_headers(api_key=self.api_key),
         )
         verify_response(api_response)
+        response_data = get_response_data(response=api_response)
+        if not response_data:
+            return None
 
-        return None
+        return prepare_object_response(
+            response_model=BatchEventResponse,
+            data=response_data,
+        )
 
     def estimate_fees(self, input_object: BaseModel) -> Mapping[str, Any]:
         api_response: Response = send_post_request(
-            url= make_url(
+            url=make_url(
                 origin=self.base_url,
                 path_parts=(self.API_RESOURCE, 'estimate_fees'),
             ),
