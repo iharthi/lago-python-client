@@ -14,7 +14,7 @@ class Metric(BaseModel):
 
 class ChargeFilterUsage(BaseModel):
     invoice_display_name: Optional[str]
-    values: Dict[str, List[str]]
+    values: Optional[Dict[str, List[str]]]
     units: str
     amount_cents: int
     events_count: int
@@ -25,12 +25,14 @@ class ChargeObject(BaseModel):
     charge_model: str
     invoice_display_name: Optional[str]
 
+
 class GroupedUsage(BaseModel):
     amount_cents: int
     events_count: int
     units: float
     grouped_by: Dict[str, Optional[str]]
     filters: List[ChargeFilterUsage]
+
 
 class ChargeUsage(BaseModel):
     units: float
